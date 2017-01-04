@@ -1,0 +1,17 @@
+/*
+ following variables must be already created
+
+ ID_Data
+ InputData
+ OutputModel
+ 
+*/
+
+WriteLn( "Starting process_data" );
+WriteLn( "ID_Data = " << ID_Data );
+WriteLn( "InputData = " << InputData );
+WriteLn( "OutputData = " << OutputData );
+
+Real OSFilCopy( InputData, OutputData );
+
+WriteLn( "BYE!" );

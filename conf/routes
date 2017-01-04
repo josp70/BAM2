@@ -1,0 +1,18 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                           controllers.Application.index
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+
+# Upload a table to model
+POST    /tables                     controllers.BamTables.upload
+
+# Download a result table
+GET     /models/:id                 controllers.BamTables.download(id)
+
+# Download a log for an id
+GET     /logs/:id                   controllers.BamTables.downloadLog(id)
