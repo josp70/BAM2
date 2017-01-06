@@ -9,10 +9,10 @@ GET     /                           controllers.Application.index
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 # Upload a table to model
-POST    /tables                     controllers.BamTables.upload
+POST    /forecast                     controllers.BamTables.postForecast
 
 # Download a result table
-GET     /models/:id                 controllers.BamTables.download(id)
+GET     /forecast/:id                 controllers.BamTables.getForecast(id)
 
 # Download a log for an id
 GET     /logs/:id                   controllers.BamTables.downloadLog(id)
