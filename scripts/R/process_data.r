@@ -21,10 +21,7 @@ cat("OutputData =", OutputData, "\n")
 cat("InputFormat =", InputFormat, "\n")
 cat("MethodForecast =", MethodForecast, "\n")
 
-read.bst = function( path ) {
-  z1 = read.zoo(path, format="y%Ym%md%d", header=TRUE, sep=";")
-  z1[,-ncol(z1)]
-}
+#head(read.csv2(InputData))
 
 build.ts = function( z ) {
   t = ts(z)
@@ -40,27 +37,37 @@ getDating = function(name) {
     Daily = Daily)
 }
 
-Sread.bst = function(path) {
-  table = read.csv2(path)
+Sread.bdt = function(path) {
+  table = read.table(path, header=TRUE, sep=";")
+  #print(head(table))
   dating = getDating(names(table)[1])
   firstD = as.Date(table[1,1], format="y%Ym%md%d")
-  Serie(as.numeric(table[,2]), dating, firstD)
+  #print(head(table[,2]))
+  #print(head(as.numeric(table[,2])))
+  Serie(table[,2], dating, firstD)
 }
 
-Swrite.bst = function(s, path) {
-  data = data.frame(Sdates(s), as.numeric(s))
+Swrite.bdt = function(s, path) {
+  # Sdates tiene un error que se salta la primera fecha, ojo incluso con el -2, -1 no da el anterior
+  dating = Sdating(s)
+  seqDates = Dseq(Dsucc(Sfirst(s), dating, -2), , dating, length(s))
+  data = data.frame(seqDates, as.numeric(s))
   names(data) = c(Sdating(s), "forecast")
   write.table(data, path, row.names=FALSE, quote=FALSE, sep=";")
 }
 
-z = Sread.bst(InputData)
+z = Sread.bdt(InputData)
 y = as.ts(z)
 fc = forecast(y)
 lastD_obs = Slast(z)
 firstD_fc = Dsucc(lastD_obs, Sdating(z))
+#print(c(lastD_obs, firstD_fc))
 z_fc = Serie(as.numeric(fc$mean), Sdating(z), firstD_fc)
 
-Swrite.bst(z_fc, OutputData)
+
+Swrite.bdt(z_fc, OutputData)
+#write.csv2(as.numeric(z), "/tmp/Z.csv")
+#write.csv2(as.numeric(z_fc), OutputData)
 
 #st = file.copy(InputData, OutputData)
 

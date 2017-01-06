@@ -54,12 +54,12 @@ class BamTables @Inject() (val currentEnv: play.api.Environment, val currentConf
 
   init()
 
-  def getDirUploaded(): java.io.File = currentEnv.getFile("data/uploaded")
-  def getDirModelled(): java.io.File = currentEnv.getFile("data/modelled")
-  def getDirForecast(): java.io.File = currentEnv.getFile("data/forecast")
-  def getDirLogs(): java.io.File = currentEnv.getFile("data/logs")
-  def getDirTolResources(): java.io.File = currentEnv.getFile("scripts/tol")
-  def getDirRResources(): java.io.File = currentEnv.getFile("scripts/R")
+  def getDirUploaded(): java.io.File = currentEnv.getFile("/data/uploaded")
+  def getDirModelled(): java.io.File = currentEnv.getFile("/data/modelled")
+  def getDirForecast(): java.io.File = currentEnv.getFile("/data/forecast")
+  def getDirLogs(): java.io.File = currentEnv.getFile("/data/logs")
+  def getDirTolResources(): java.io.File = currentEnv.getFile("/scripts/tol")
+  def getDirRResources(): java.io.File = currentEnv.getFile("/scripts/R")
 
   def getFileUploaded(name: String): java.io.File = new java.io.File(getDirUploaded, name)
   def getFileModelled(name: String): java.io.File = new java.io.File(getDirModelled, name)
@@ -75,14 +75,14 @@ class BamTables @Inject() (val currentEnv: play.api.Environment, val currentConf
       InternalServerError("unknown or invalid path to Rscript")
     } else {
       val methodForecast = request.getQueryString("method").getOrElse("forecast")
-      val formatData = request.getQueryString("format").getOrElse("csv")
+      val formatData = request.getQueryString("format").getOrElse("bdt")
       Logger.info("method = " + methodForecast)
-      if (formatData == "csv") {
+      if (formatData == "bdt") {
         request.body.file("dataframe").map { file =>
           Logger.info(s"Received: ${file.filename}")
           val id = java.util.UUID.randomUUID.toString
-          val inputName = id + ".data"
-          val outputName = id + ".fc"
+          val inputName = id + ".bdt"
+          val outputName = id + ".bdt"
           var fileLog = id + ".log"
           val fileInput = getFileUploaded(inputName)
           val fileOutput = getFileForecast(outputName)
@@ -98,13 +98,13 @@ class BamTables @Inject() (val currentEnv: play.api.Environment, val currentConf
           BadRequest("dataframe is missing")
         }
       } else {
-        BadRequest(s"format=${formatData} invalid. Valid formats are: csv")
+        BadRequest(s"format=${formatData} invalid. Valid formats are: bdt")
       }
     }
   }
 
  def getForecast(id: String) = Action {
-    val outputName = id + ".fc"
+    val outputName = id + ".bdt"
     val fileOutput = getFileForecast(outputName)
     if (fileOutput.exists()) {
       // https://www.playframework.com/documentation/2.5.x/ScalaStream
