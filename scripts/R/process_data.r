@@ -29,12 +29,7 @@ build.ts = function( z ) {
 }
 
 getDating = function(name) {
-  switch(name,
-    Yearly = Yearly,
-    Quarterly = Quarterly,
-    Monthly = Monthly,
-    Weekly = Weekly,
-    Daily = Daily)
+  eval(parse(text=name))
 }
 
 Sread.bdt = function(path) {
@@ -48,10 +43,10 @@ Sread.bdt = function(path) {
 }
 
 Swrite.bdt = function(s, path) {
-  # Sdates tiene un error que se salta la primera fecha, ojo incluso con el -2, -1 no da el anterior
   dating = Sdating(s)
-  seqDates = Dseq(Dsucc(Sfirst(s), dating, -2), , dating, length(s))
-  data = data.frame(seqDates, as.numeric(s))
+  # Sdates tiene un error que se salta la primera fecha, ojo incluso con el -2, -1 no da el anterior
+  # seqDates = Dseq(Dsucc(Sfirst(s), dating, -2), , dating, length(s))
+  data = data.frame(Sdates(s), as.numeric(s))
   names(data) = c(Sdating(s), "forecast")
   write.table(data, path, row.names=FALSE, quote=FALSE, sep=";")
 }
