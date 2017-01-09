@@ -113,7 +113,7 @@ class BamTables @Inject() (val currentEnv: play.api.Environment, val currentConf
         inline=false).withHeaders(CACHE_CONTROL->"max-age=3600",
                                   CONTENT_DISPOSITION -> ("attachment; filename="+outputName))
     } else {
-      Ok("File still not created")
+      NoContent
     }
   }
 
@@ -126,7 +126,7 @@ class BamTables @Inject() (val currentEnv: play.api.Environment, val currentConf
         inline=false).withHeaders(CACHE_CONTROL->"max-age=3600",
         CONTENT_DISPOSITION -> ("attachment; filename="+outputName))
     } else {
-      Ok("File still not created")
+      NoContent
     }
   }
 }
