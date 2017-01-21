@@ -3,7 +3,7 @@ args = commandArgs(trailingOnly=TRUE)
 
 # test if there are 3 arguments: if not, return an error
 if (length(args)!=6) {
-  stop("five arguments must be provided: <id> <input.data> <output.model> formatInput formatOutput method", call.=FALSE)
+  stop("6 arguments must be provided: <id> <input.data> <output.model> formatInput formatOutput method", call.=FALSE)
 }
 
 library(forecast)
@@ -52,7 +52,8 @@ Sread.json = function(path) {
     json = fromJSON(path, simplifyDataFrame = FALSE)
     dating = getDating(json$timeset)
     # anytime expect epoch in seconds
-    firstD = anytime(json$series[[1]]$first/1000)
+    firstD = anytime(json$series[[1]]$first/1000, "CET")
+    #print(paste("firstD", firstD))
     Serie(json$series[[1]]$values, dating, firstD)
 }
 
@@ -92,13 +93,21 @@ z = if(InputFormat == 'json')  {
         Sread.bdt(InputData)
     }
 
+#print(c(Sfirst(z), Slast(z)))
+#print(Sdates(z))
+
 y = as.ts(z)
 fc = forecast(y)
-lastD_obs = Slast(z)
-firstD_fc = Dsucc(lastD_obs, Sdating(z))
-#print(c(lastD_obs, firstD_fc))
-z_fc = Serie(as.numeric(fc$mean), Sdating(z), firstD_fc)
 
+allDates = Sdates(z)
+lastD_obs = allDates[length(allDates)]
+#lastD_obs = Slast(z)
+firstD_fc = Dsucc(lastD_obs, Sdating(z))
+
+#print(c(lastD_obs, firstD_fc))
+
+z_fc = Serie(as.numeric(fc$mean), Sdating(z), firstD_fc)
+print(Sfirst(z_fc))
 
 #Swrite.bdt(z_fc, OutputData)
 Swrite.json(list(forecast.mean=z_fc), OutputData)
@@ -109,3 +118,5 @@ Swrite.json(list(forecast.mean=z_fc), OutputData)
 #st = file.copy(InputData, OutputData)
 
 cat("BYE\n")
+
+#Rscript ../scripts/R/process_data.r 1 o2_iphone.json /tmp/kk.json json json forecast

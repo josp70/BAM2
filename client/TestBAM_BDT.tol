@@ -8,8 +8,8 @@ Set infoServer = [[
     "-port", "9000"
 ]];
 
-//BAM_REST::Init(infoServer);
-BAM_REST::Init(Empty);
+BAM_REST::Init(infoServer);
+//BAM_REST::Init(Empty);
 
 Text bufferBDT = ReadFile("./o2_iphone.bdt");
 Text id = BAM_REST::POST_Data([["-bdt", bufferBDT,

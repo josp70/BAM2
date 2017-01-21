@@ -1,6 +1,12 @@
 Set Include("BAM_REST.tol");
 
-BAM_REST::Init(Empty);
+Set infoServer = [[
+    "-host", "52.50.99.11",
+    "-port", "9000"
+]];
+
+BAM_REST::Init(infoServer);
+//BAM_REST::Init(Empty);
 
 Set bdt = IncludeBDT("./weter_Berlin.bdt");
 Text txtJSON = BAM_REST::SetSeriesToJSON(bdt);
