@@ -1,0 +1,31 @@
+Set Include("BAM_REST.tol");
+
+//Real Stop;
+
+//BAM_REST::SetHostInfo("52.50.99.11", "9000");
+Set infoServer = [[
+    "-host", "52.50.99.11",
+    "-port", "9000"
+]];
+
+//BAM_REST::Init(infoServer);
+BAM_REST::Init(Empty);
+
+Text bufferBDT = ReadFile("./o2_iphone.bdt");
+Text id = BAM_REST::POST_Data([["-bdt", bufferBDT,
+                                "-verbose", "1"]]);
+WriteLn("id = " << id );
+
+//Real Stop;
+
+Text pathForecast = BAM_REST::GET_Forecast(id,
+					   [["-tofile", id + ".bdt", "-wait", 2000]]);
+
+WriteLn("forecast = " << pathForecast );
+
+Text pathLog = BAM_REST::GET_Log(id,
+				 [["-tofile", id + ".log",
+				   "-verbose", "1"]]);
+
+WriteLn("pathLog = " << pathLog );
+

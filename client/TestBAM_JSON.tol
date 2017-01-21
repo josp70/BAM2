@@ -1,0 +1,18 @@
+Set Include("BAM_REST.tol");
+
+BAM_REST::Init(Empty);
+
+Set bdt = IncludeBDT("./weter_Berlin.bdt");
+Text txtJSON = BAM_REST::SetSeriesToJSON(bdt);
+
+Text id = BAM_REST::POST_Data([["-json", txtJSON, "-verbose", "1"]]);
+WriteLn("id = " << id );
+
+//Text BAM_REST::GET_Forecast(id, [["-tofile", id + "_fc.json", "-wait", 2000]]);
+
+Text bufferJSON = BAM_REST::GET_Forecast(id, [["-wait", 2000]]);
+
+WriteLn("JSON = " << bufferJSON);
+
+
+Set serForecast = BAM_REST::FromJSONToSetSeries(bufferJSON);

@@ -1,0 +1,178 @@
+NameBlock BAM_REST = [[
+  Text _.cwd = GetAbsolutePath("./");
+
+  Real TclScript(Text script)
+  {
+    Set tclres = Tcl_Eval(script);
+    Real If(tclres::status, 1, {
+      Error(tclres::result);
+      0
+      })
+  };
+
+  Real TclSet(Set args)
+  {
+    Set tclres = Tcl_EvalEx(args);
+    Real If(tclres::status, 1, {
+      Error(tclres::result);
+      0
+      })
+  };
+
+  Text TclSet_Get(Set args)
+  {
+    Set tclres = Tcl_EvalEx(args);
+    Text If(tclres::status, tclres::result, {
+      Error(tclres::result);
+      ""
+      })
+  };
+
+  Date EpochToDate( Real clk )
+  {
+    Text txtDate = TclSet_Get([["::BAM_REST::EpochToDate", IntText(clk)]]);
+    Date TextToDate(txtDate, "%Y-%m-%d")
+  };
+
+  Real DateToEpoch( Date dt )
+  {
+    Real TextToReal(TclSet_Get([["::BAM_REST::DateToEpoch",
+    	                         FormatDate(dt, "%Y-%m-%d")]]))
+  };
+
+  Text JSON_MakeValueText(Text txt)
+  {
+    Text "\"" << txt << "\""
+  };
+
+  Text JSON_MakeValueInt(Real value)
+  {
+    IntText(value)
+  };
+
+  Text JSON_MakeField(Text name, Text value)
+  {
+    Text JSON_MakeValueText(name) << ":" <<  value
+  };
+
+  Text JSON_MakeObject(Set fields)
+  {
+    Text "{" + TextJoinWith(fields, ",") + "}"
+  };
+
+  Text JSON_MakeArrayReal(Set values)
+  {
+    "[" + TextJoinWith(EvalSet(values, Text(Real x) {FormatReal(x)}), ",") +
+    "]" 
+  };
+
+  Text JSON_MakeArrayInt(Set values)
+  {
+    "[" + TextJoinWith(EvalSet(values, Text(Real x) {IntText(x)}), ",") + "]" 
+  };
+
+  Text JSON_MakeArrayValue(Set values)
+  {
+    "[" + TextJoinWith(values, ",") + "]" 
+  };
+
+  Text JSON_MakeSerieData(Serie ser)
+  {
+    Text fieldName = JSON_MakeField("name", JSON_MakeValueText(Name(ser)));
+    Text fieldFirst = JSON_MakeField("first",
+                                     JSON_MakeValueInt(DateToEpoch(First(ser))));
+    Text fieldValues = JSON_MakeField("values", JSON_MakeArrayReal(SerSet(ser)));
+    Text resultJSON = JSON_MakeObject([[fieldName, fieldFirst, fieldValues]])
+  };
+  
+  Set ListEpochDates(TimeSet ts, Date first, Date last)
+  {
+    EvalSet(Dates(ts, first,last), DateToEpoch)
+  };
+  
+  Text GetCommonTimeSet(Set series, Date first, Date last)
+  {
+    @TimeSet dating0 = [[Dating(series[1])]];
+    Text datingName = Case(
+      AreCompatibleTimeSet($dating0, Daily, first, last),     "Daily",  
+      AreCompatibleTimeSet($dating0, Weekly, first, last),    "Weekly",  
+      AreCompatibleTimeSet($dating0, Monthly, first, last),   "Monthly",  
+      AreCompatibleTimeSet($dating0, Quarterly, first, last), "Quarterly",  
+      AreCompatibleTimeSet($dating0, Yearly, first, last),    "Yearly",  
+      True, { Error("[BAM_REST] Unsupported TimeSet "+ datingName); Real Stop });
+    Set EvalSet(series, Real(Serie s) {
+      If(AreCompatibleTimeSet($dating0, Dating(s), first, last), 1, {
+        Error("[BAM_REST] The set of series does not have a common TimeSet")
+        })
+      });
+    Text datingName
+  };
+
+  Text SetSeriesToJSON(Set series)
+  {
+    Date first = SetMinDate(EvalSet(series,First));
+    Date last  = SetMaxDate(EvalSet(series,Last ));
+    Text commonTS = GetCommonTimeSet(series, first, last);
+    Text fieldTimeSet = JSON_MakeField("timeset", JSON_MakeValueText(commonTS));
+    Set datesEpoch = ListEpochDates(Dating(series[1]), first, last);
+    Text jsonArrayEpoch = JSON_MakeArrayInt(datesEpoch);
+    Text fieldDates = JSON_MakeField("dates", jsonArrayEpoch);
+    Set setJsonObj = EvalSet(series, Text(Serie ser) {
+      JSON_MakeSerieData(ser)
+      });
+    Text fieldSeries = JSON_MakeField("series", JSON_MakeArrayValue(setJsonObj));
+    Text resultJSON = JSON_MakeObject([[fieldTimeSet, fieldDates, fieldSeries]])
+  };
+
+  Set FromJSONToSetSeries(Text json)
+  {
+    Text objJson = TclSet_Get([["::BAM_REST::JSON_Serie", "%AUTO%", json]]);
+    Text timeSet = TclSet_Get([[objJson, "getTimeSet"]]);
+    Text first = TclSet_Get([[objJson, "getSerieFirstDateAsTOL", "0"]]);
+    Text values = TclSet_Get([[objJson, "getSerieValuesAsTOL", "0"]]);
+    Real TclSet([[objJson, "destroy"]]);
+    [[SetSer(Set Eval(values), TextToDate(first), TimeSet Eval(timeSet))]] 
+  };
+  
+  Real SetServerInfo(Set args)
+  {
+    TclSet([["::BAM_REST::SetServerInfo"]] << args)
+  };
+  
+  Real Init(Set args)
+  {
+    Text pathTcl = _.cwd + "BAM_REST.tcl";
+    Real status0 = TclSet([["source", pathTcl]]);
+    If(status0, {
+      SetServerInfo(args)
+      }, status)
+  };
+  
+  Text POST_Data(Set args)
+  {
+    Set tclres = Tcl_EvalEx([["::BAM_REST::POST_Data"]] << args);
+    Text If(tclres::status, tclres::result, {
+      Error(tclres::result);
+      ""
+      })
+  };
+
+  Text GET_Log(Text id, Set args)
+  {
+    Set tclres = Tcl_EvalEx([["::BAM_REST::GET_Log", id]] << args);
+    Text If(tclres::status, tclres::result, {
+      Error(tclres::result);
+      ""
+      })
+  };
+
+  Text GET_Forecast(Text id, Set args)
+  {
+    Set tclres = Tcl_EvalEx([["::BAM_REST::GET_Forecast", id]] << args);
+    Text If(tclres::status,
+      If(Sub(tclres::result, 1, 5)=="ERROR",
+         Sub(tclres::result, 7, TextLength(tclres::result)),
+         tclres::result), {Error(tclres::result); ""})
+  }
+
+]];
