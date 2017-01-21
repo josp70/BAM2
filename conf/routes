@@ -16,3 +16,7 @@ GET     /forecast/:id                 controllers.BamTables.getForecast(id)
 
 # Download a log for an id
 GET     /logs/:id                   controllers.BamTables.downloadLog(id)
+
+POST   /upload                      controllers.BamTables.postTimeSeries
+
+POST   /echo                        controllers.BamTables.echoTxtOrJson
