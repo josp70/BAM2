@@ -15,6 +15,11 @@ import play.api.libs.json._
 
 import scala.concurrent.Future
 
+// https://dahl-git.byu.edu/dahl/rscala/
+import org.ddahl.rscala._
+
+// https://www.rforge.net/Rserve/
+// import org.rosuda.REngine.Rserve.RConnection
 /**
   * Created by jorge on 22/12/16.
   */
@@ -23,6 +28,8 @@ class BamTables @Inject() (val currentEnv: play.api.Environment, val currentConf
   //var pathTolsh: String = "";
   var pathRscript: String = "";
 
+  val R = RClient()
+  
   def getAppPath( name: String ): String = {
     val conf =  currentConf.getString(name)
     var value: String = ""
@@ -228,5 +235,9 @@ class BamTables @Inject() (val currentEnv: play.api.Environment, val currentConf
     } else {
       NoContent
     }
+  }
+
+  def getRVersion() = Action {
+    Ok(R.evalS0("version$version.string"))
   }
 }

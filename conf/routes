@@ -20,3 +20,6 @@ GET     /logs/:id                   controllers.BamTables.downloadLog(id)
 POST   /upload                      controllers.BamTables.postTimeSeries
 
 POST   /echo                        controllers.BamTables.echoTxtOrJson
+
+# API to test R
+GET    /R/version                   controllers.BamTables.getRVersion()
